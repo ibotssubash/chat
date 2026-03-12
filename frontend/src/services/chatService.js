@@ -26,6 +26,11 @@ export const chatService = {
     return response.data
   },
 
+  deleteMessage: async (messageId) => {
+    const response = await api.delete(`/messages/${messageId}`)
+    return response.data
+  },
+
   getUsers: async () => {
     const response = await api.get('/auth/users')
     return response.data

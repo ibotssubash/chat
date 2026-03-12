@@ -16,6 +16,53 @@ const Chat = () => {
   const [showCreateConversation, setShowCreateConversation] = useState(false)
   const [selectedUsers, setSelectedUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showBackgroundImage, setShowBackgroundImage] = useState(false)
+  const [showImageSelector, setShowImageSelector] = useState(false)
+  const [backgroundImage, setBackgroundImage] = useState('https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=1920&q=80')
+
+  const backgroundImages = [
+    {
+      id: 1,
+      name: 'Nature Mountain',
+      url: 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=1920&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=100&q=80'
+    },
+    {
+      id: 2,
+      name: 'Ocean Sunset',
+      url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=100&q=80'
+    },
+    {
+      id: 3,
+      name: 'Forest Path',
+      url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=100&q=80'
+    },
+    {
+      id: 4,
+      name: 'City Lights',
+      url: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1920&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=100&q=80'
+    },
+    {
+      id: 5,
+      name: 'Desert Dunes',
+      url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=1920&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&w=100&q=80'
+    },
+    {
+      id: 6,
+      name: 'Aurora Sky',
+      url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1920&q=80',
+      thumbnail: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=100&q=80'
+    }
+  ]
+
+  const handleImageSelect = (imageUrl) => {
+    setBackgroundImage(imageUrl)
+    setShowImageSelector(false)
+  }
 
   useEffect(() => {
     if (user) {
@@ -223,6 +270,12 @@ const Chat = () => {
     }
   }
 
+  const handleMessageDeleted = (deletedMessageId) => {
+    // Remove the deleted message from the state
+    setMessages(prev => prev.filter(msg => msg.id !== deletedMessageId))
+    console.log('Message deleted from UI:', deletedMessageId)
+  }
+
   if (loading) {
     return <div>Loading...</div>
   }
@@ -251,10 +304,132 @@ const Chat = () => {
         onRefreshUsers={handleRefreshUsers}
       />
       
-      <div className="main-chat">
+      <div className="main-chat" style={{
+        position: 'relative',
+        backgroundImage: showBackgroundImage ? `url(${backgroundImage})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: showBackgroundImage ? 'transparent' : '#1a1a1a'
+      }}>
+        {/* Background Toggle Button */}
+        <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10, display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => setShowImageSelector(!showImageSelector)}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: showBackgroundImage ? 'rgba(255, 255, 255, 0.2)' : '#4a9eff',
+              color: '#fff',
+              border: showBackgroundImage ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+              borderRadius: '6px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              backdropFilter: showBackgroundImage ? 'blur(10px)' : 'none',
+              transition: 'all 0.3s ease'
+            }}
+            title="Change background image"
+          >
+            🎨 Change
+          </button>
+          <button
+            onClick={() => setShowBackgroundImage(!showBackgroundImage)}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: showBackgroundImage ? 'rgba(255, 255, 255, 0.2)' : '#4a9eff',
+              color: '#fff',
+              border: showBackgroundImage ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+              borderRadius: '6px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              backdropFilter: showBackgroundImage ? 'blur(10px)' : 'none',
+              transition: 'all 0.3s ease'
+            }}
+            title={showBackgroundImage ? 'Hide background image' : 'Show background image'}
+          >
+            {showBackgroundImage ? '🖼️ Hide' : '🖼️ Show'}
+          </button>
+        </div>
+
+        {/* Image Selector Modal */}
+        {showImageSelector && (
+          <div style={{
+            position: 'absolute',
+            top: '50px',
+            right: '10px',
+            backgroundColor: '#2a2a2a',
+            border: '1px solid #444',
+            borderRadius: '8px',
+            padding: '15px',
+            zIndex: 20,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            minWidth: '300px'
+          }}>
+            <div style={{ marginBottom: '10px', color: '#fff', fontWeight: 'bold' }}>
+              Choose Background Image:
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+              {backgroundImages.map(img => (
+                <div
+                  key={img.id}
+                  onClick={() => handleImageSelect(img.url)}
+                  style={{
+                    cursor: 'pointer',
+                    borderRadius: '6px',
+                    overflow: 'hidden',
+                    border: backgroundImage === img.url ? '2px solid #4a9eff' : '2px solid transparent',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  <img
+                    src={img.thumbnail}
+                    alt={img.name}
+                    style={{
+                      width: '100%',
+                      height: '80px',
+                      objectFit: 'cover',
+                      display: 'block'
+                    }}
+                  />
+                  <div style={{
+                    padding: '5px',
+                    fontSize: '11px',
+                    color: '#fff',
+                    textAlign: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.5)'
+                  }}>
+                    {img.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowImageSelector(false)}
+              style={{
+                marginTop: '10px',
+                padding: '6px 12px',
+                backgroundColor: '#ff4757',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer',
+                width: '100%'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        )}
+        
         {selectedConversation ? (
           <>
-            <MessageList messages={messages} currentUserId={user.id} />
+            <MessageList 
+              messages={messages} 
+              currentUserId={user.id} 
+              onMessageDeleted={handleMessageDeleted}
+            />
             <MessageInput onSendMessage={handleSendMessage} />
           </>
         ) : (
@@ -263,7 +438,11 @@ const Chat = () => {
             alignItems: 'center', 
             justifyContent: 'center', 
             height: '100%',
-            color: '#888'
+            color: showBackgroundImage ? '#fff' : '#888',
+            textShadow: showBackgroundImage ? '2px 2px 4px rgba(0,0,0,0.8)' : 'none',
+            backgroundColor: showBackgroundImage ? 'rgba(0,0,0,0.3)' : 'transparent',
+            borderRadius: '8px',
+            padding: '20px'
           }}>
             Select a conversation to start chatting
           </div>

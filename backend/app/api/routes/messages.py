@@ -46,3 +46,32 @@ async def create_message(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=str(e)
         )
+
+
+@router.delete("/{message_id}")
+async def delete_message(
+    message_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        success = await message_crud.delete_message(
+            db, message_id=message_id, user_id=current_user.id
+        )
+        return {"message": "Message deleted successfully", "success": success}
+    except ValueError as e:
+        if "not found" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=str(e)
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete message: {str(e)}"
+        )

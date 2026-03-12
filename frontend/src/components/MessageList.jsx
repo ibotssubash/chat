@@ -1,13 +1,24 @@
 import { useEffect, useRef, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
+import { chatService } from '../services/chatService'
 
-const MessageList = ({ messages, currentUserId }) => {
+const MessageList = ({ messages, currentUserId, onMessageDeleted }) => {
   const messagesEndRef = useRef(null)
   const { user } = useContext(AuthContext) // Get authenticated user
 
   const getUserProfileImage = (userId) => {
     // Try to get saved profile image from localStorage
     return localStorage.getItem(`profile_image_${userId}`)
+  }
+
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      await chatService.deleteMessage(messageId)
+      onMessageDeleted(messageId) // Notify parent component
+    } catch (error) {
+      console.error('Failed to delete message:', error)
+      alert('Failed to delete message. You can only delete your own messages.')
+    }
   }
 
   const scrollToBottom = () => {
@@ -102,7 +113,8 @@ const MessageList = ({ messages, currentUserId }) => {
               
               <strong style={{ 
                 color: message.sender_id === currentUserId ? '#4a9eff' : '#fff',
-                verticalAlign: 'middle'
+                verticalAlign: 'middle',
+                flex: 1
               }}>
                 {message.sender?.username || 'Unknown User'}
               </strong>
@@ -119,9 +131,44 @@ const MessageList = ({ messages, currentUserId }) => {
                   ID: {message.sender_id}
                 </span>
               )}
-              <span className="timestamp">
+              <span className="timestamp" style={{ 
+                fontSize: '11px', 
+                color: '#666', 
+                marginLeft: '8px',
+                verticalAlign: 'middle'
+              }}>
                 {formatTime(message.created_at)}
               </span>
+              
+              {/* Delete Button - Only for own messages */}
+              {message.sender_id === currentUserId && (
+                <button
+                  onClick={() => handleDeleteMessage(message.id)}
+                  style={{
+                    marginLeft: '8px',
+                    padding: '2px 6px',
+                    backgroundColor: 'transparent',
+                    color: '#ff4757',
+                    border: '1px solid #ff4757',
+                    borderRadius: '3px',
+                    fontSize: '10px',
+                    cursor: 'pointer',
+                    verticalAlign: 'middle',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = '#ff4757'
+                    e.target.style.color = '#fff'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = 'transparent'
+                    e.target.style.color = '#ff4757'
+                  }}
+                  title="Delete message"
+                >
+                  🗑️ Delete
+                </button>
+              )}
             </div>
             <div className="message-content" style={{
               wordWrap: 'break-word',

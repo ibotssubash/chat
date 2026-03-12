@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from sqlalchemy import desc
+from sqlalchemy import desc, delete
 from app.models.message import Message
 from app.models.conversation import ConversationParticipant
 from app.schemas.message import MessageCreate
@@ -72,6 +72,36 @@ class MessageCRUD:
             .filter(Message.id == db_message.id)
         )
         return result.scalar_one()
+    
+    async def delete_message(
+        self, 
+        db: AsyncSession, 
+        message_id: int,
+        user_id: int
+    ) -> bool:
+        # Get message with conversation info
+        result = await db.execute(
+            select(Message)
+            .options(selectinload(Message.sender))
+            .filter(Message.id == message_id)
+        )
+        message = result.scalar_one_or_none()
+        
+        if not message:
+            raise ValueError("Message not found")
+        
+        # Check if user is the sender
+        if message.sender_id != user_id:
+            raise ValueError("Only message sender can delete their own messages")
+        
+        # Delete the message
+        await db.execute(
+            delete(Message)
+            .filter(Message.id == message_id)
+        )
+        await db.commit()
+        
+        return True
 
 
 message_crud = MessageCRUD()
