@@ -50,7 +50,7 @@ export class WebSocketService {
       return
     }
 
-    const wsUrl = `ws://localhost:8000/ws/${conversationId}?token=${token}`
+    const wsUrl = `wss://chat-6-dbw5.onrender.com/ws/${conversationId}?token=${token}`
     console.log('Connecting to WebSocket:', wsUrl)
     
     this.ws = new WebSocket(wsUrl)
